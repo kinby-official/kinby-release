@@ -45,7 +45,7 @@ jobs:
             bundle-path: build/linux/x64/release/bundle
           - os: macOS-latest
             platfrom: macos
-            bundle-path: build/macos/Build/Products/Release/kinby.app
+            bundle-path: build/macos/Build/Products/Release
           - os: windows-latest
             platfrom: windows
             bundle-path: build/windows/x64/runner/Release
@@ -55,7 +55,7 @@ jobs:
         with:
           repository: kinby-official/kinby
           token: ${{ secrets.MAIN_PAT }}
-      - run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
+      - run: sudo apt-get update && sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
