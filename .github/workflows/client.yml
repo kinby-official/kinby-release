@@ -5,7 +5,13 @@ on:
       ref: 
         description: "The ref to build"
         required: true
-        default: "main"
+        default: main
+        type: string
+      debug:
+        description: "launch tmate session on failure"
+        required: false
+        default: false
+        type: boolean
 jobs:
   android:
     runs-on: [ubuntu-latest]
@@ -40,8 +46,8 @@ jobs:
           path: build/app/outputs/apk/release
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 10
-        if: ${{ failure() }}
+        timeout-minutes: 30
+        if: ${{ failure() && inputs.debug }}
   desktop:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -86,5 +92,5 @@ jobs:
           path: ${{ matrix.bundle-path }}
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 10
-        if: ${{ failure() }}
+        timeout-minutes: 30
+        if: ${{ failure() && inputs.debug }}
