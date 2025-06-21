@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kinby-android-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
-          path: build/app/outputs/apk/release
+          path: build/app/outputs/apk/release/*.apk
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
@@ -58,7 +58,7 @@ jobs:
             bundle-path: build/linux/x64/release/bundle
           - os: macOS-latest
             platfrom: macos
-            bundle-path: build/macos/Build/Products/Release/kinby.app
+            bundle-path: build/macos/Build/Products/*/kinby.app
           - os: windows-latest
             platfrom: windows
             bundle-path: build/windows/x64/runner/Release
@@ -89,9 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kinby-${{ matrix.platfrom }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
-          path: |
-            ${{ matrix.bundle-path }}
-            README.md
+          path: ${{ matrix.bundle-path }}
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
