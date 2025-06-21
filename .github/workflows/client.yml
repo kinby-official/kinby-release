@@ -1,5 +1,11 @@
 name: Build Client
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      ref: 
+        description: "The ref to build"
+        required: true
+        default: "main"
 jobs:
   android:
     runs-on: [ubuntu-latest]
@@ -9,6 +15,7 @@ jobs:
         with:
           repository: kinby-official/kinby
           token: ${{ secrets.MAIN_PAT }}
+          ref: ${{ inputs.ref }}
       - name: Extract Signature
         run: echo ${{secrets.KEY_FILE}} | base64 -d > $HOME/.android.jks
       - name: Set up Flutter
@@ -55,6 +62,7 @@ jobs:
         with:
           repository: kinby-official/kinby
           token: ${{ secrets.MAIN_PAT }}
+          ref: ${{ inputs.ref }}
       - run: sudo apt-get update && sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Set up Flutter
