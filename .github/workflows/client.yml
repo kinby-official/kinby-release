@@ -1,0 +1,80 @@
+name: Build Client
+on: [workflow_dispatch]
+jobs:
+  android:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v1
+        with:
+          repository: kinby-official/kinby
+      - name: Extract Signature
+        run: echo ${{secrets.KEY_FILE}} | base64 -d > $HOME/.android.jks
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: flutter generate
+        run: dart run build_runner build --delete-conflicting-outputs && flutter gen-l10n
+      - name: Build APK
+        run: flutter build apk --split-per-abi
+        env:
+          KEY_PASS: ${{secrets.KEY_PASS}}
+      - name: Set short SHA
+        id: short_sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinby-android-${{ github.ref_name }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+          path: build/app/outputs/apk/release
+      - name: Setup session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 10
+        if: ${{ failure() }}
+  desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platfrom: linux
+            bundle-path: build/linux/x64/release/bundle
+          - os: macOS-latest
+            platfrom: macos
+            bundle-path: build/macos/Build/Products/Release/kinby.app
+          - os: windows-latest
+            platfrom: windows
+            bundle-path: build/windows/x64/runner/Release
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v2
+        with:
+          repository: kinby-official/kinby
+      - run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
+        if: matrix.os == 'ubuntu-latest'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter config --enable-${{ matrix.platfrom }}-desktop
+      - name: flutter generate
+        run: dart run build_runner build --delete-conflicting-outputs && flutter gen-l10n
+      - name: Build ${{ matrix.platfrom }}
+        run: flutter build ${{ matrix.platfrom }}
+      - name: Set short SHA
+        id: short_sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Upload Client
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinby-${{ matrix.platfrom }}-${{ github.ref_name }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+          path: ${{ matrix.bundle-path }}
+      - name: Setup session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 10
+        if: ${{ failure() }}
