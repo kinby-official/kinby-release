@@ -37,12 +37,12 @@ jobs:
           KEY_PASS: ${{secrets.KEY_PASS}}
       - name: Set short SHA
         id: short_sha
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        run: echo "SHORT_SHA=$(git log --oneline | head -n 1 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
         shell: bash
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: kinby-android-${{ github.ref_name }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+          name: kinby-android-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
           path: build/app/outputs/apk/release
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
@@ -53,12 +53,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platfrom: linux
             bundle-path: build/linux/x64/release/bundle
           - os: macOS-latest
             platfrom: macos
-            bundle-path: build/macos/Build/Products/Release
+            bundle-path: build/macos/Build/Products/Release/kinby.app
           - os: windows-latest
             platfrom: windows
             bundle-path: build/windows/x64/runner/Release
@@ -70,7 +70,7 @@ jobs:
           token: ${{ secrets.MAIN_PAT }}
           ref: ${{ inputs.ref }}
       - run: sudo apt-get update && sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platfrom == 'linux'
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -83,13 +83,15 @@ jobs:
         run: flutter build ${{ matrix.platfrom }}
       - name: Set short SHA
         id: short_sha
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        run: echo "SHORT_SHA=$(git log --oneline | head -n 1 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
         shell: bash
       - name: Upload Client
         uses: actions/upload-artifact@v4
         with:
-          name: kinby-${{ matrix.platfrom }}-${{ github.ref_name }}-${{ steps.short_sha.outputs.SHORT_SHA }}
-          path: ${{ matrix.bundle-path }}
+          name: kinby-${{ matrix.platfrom }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+          path: |
+            ${{ matrix.bundle-path }}
+            README.md
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
