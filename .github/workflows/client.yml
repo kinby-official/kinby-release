@@ -53,13 +53,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - abi: linux_x64
+            os: ubuntu-22.04
             platfrom: linux
             bundle-path: build/linux/x64/release/bundle
-          - os: macOS-latest
+          - abi: macos_arm64
+            os: macos-latest
             platfrom: macos
             bundle-path: build/macos/Build/Products/*/kinby.app
-          - os: windows-latest
+          - abi: windows_x64
+            os: windows-latest
             platfrom: windows
             bundle-path: build/windows/x64/runner/Release
     steps:
@@ -88,7 +91,7 @@ jobs:
       - name: Upload Client
         uses: actions/upload-artifact@v4
         with:
-          name: kinby-${{ matrix.platfrom }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+          name: kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}
           path: ${{ matrix.bundle-path }}
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
