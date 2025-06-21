@@ -5,9 +5,10 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
         with:
           repository: kinby-official/kinby
+          token: ${{ secrets.MAIN_PAT }}
       - name: Extract Signature
         run: echo ${{secrets.KEY_FILE}} | base64 -d > $HOME/.android.jks
       - name: Set up Flutter
@@ -50,9 +51,10 @@ jobs:
             bundle-path: build/windows/x64/runner/Release
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: kinby-official/kinby
+          token: ${{ secrets.MAIN_PAT }}
       - run: sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libmpv-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Set up Flutter
