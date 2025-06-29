@@ -60,7 +60,7 @@ jobs:
           - abi: macos_arm64
             os: macos-latest
             platfrom: macos
-            bundle-path: build/macos/Build/Products/*/kinby.app
+            bundle-path: build/macos/Build/Products/Release/*.app
           - abi: windows_x64
             os: windows-latest
             platfrom: windows
