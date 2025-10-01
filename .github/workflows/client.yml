@@ -108,8 +108,10 @@ jobs:
         shell: bash
       - name: Create ZIP Archive Unix
         run: zip -r "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip" ${{ matrix.bundle-path }}
+        if: matrix.platfrom == 'linux' || matrix.platfrom == 'macos'
       - name: Create ZIP Archive Windows
         run: Compress-Archive -Path ${{ matrix.bundle-path }} -DestinationPath "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
+        if: matrix.platfrom == 'windows'
       - name: Upload Client
         uses: actions/upload-artifact@v4
         with:
