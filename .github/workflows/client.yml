@@ -52,11 +52,15 @@ jobs:
             --draft \
             --title "Kinby ${{ inputs.ref }} (${{ steps.short_sha.outputs.SHORT_SHA }})" \
             --notes "Release for commit ${{ steps.short_sha.outputs.SHORT_SHA }} on branch ${{ inputs.ref }}"
+        env:
+          GH_TOKEN: ${{ secrets.MAIN_PAT }}
       - name: Upload APK to Release
         run: |
           for apk in build/app/outputs/apk/release/*.apk; do
             gh release upload "${{ inputs.ref }}" "$apk"
           done
+        env:
+          GH_TOKEN: ${{ secrets.MAIN_PAT }}
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
@@ -119,6 +123,8 @@ jobs:
       - name: Upload ZIP to Release
         run: |
           gh release upload "${{ inputs.ref }}" "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
+        env:
+          GH_TOKEN: ${{ secrets.MAIN_PAT }}
       - name: Setup session
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
