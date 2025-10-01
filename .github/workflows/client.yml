@@ -48,16 +48,16 @@ jobs:
           path: build/app/outputs/apk/release/*.apk
       - name: Create Release Draft
         run: |
-          gh release create "${{ inputs.ref }}" \
+          gh release --repo ${{ github.repository }} create "${{ inputs.ref }}" \
             --draft \
             --title "Kinby ${{ inputs.ref }} (${{ steps.short_sha.outputs.SHORT_SHA }})" \
-            --notes "Release for commit ${{ steps.short_sha.outputs.SHORT_SHA }} on branch ${{ inputs.ref }}"
+            --notes "Release ${{ steps.short_sha.outputs.SHORT_SHA }} on ${{ inputs.ref }}"
         env:
           GH_TOKEN: ${{ secrets.MAIN_PAT }}
       - name: Upload APK to Release
         run: |
           for apk in build/app/outputs/apk/release/*.apk; do
-            gh release upload "${{ inputs.ref }}" "$apk"
+            gh release --repo ${{ github.repository }} upload "${{ inputs.ref }}" "$apk"
           done
         env:
           GH_TOKEN: ${{ secrets.MAIN_PAT }}
@@ -106,15 +106,10 @@ jobs:
         id: short_sha
         run: echo "SHORT_SHA=$(git log --oneline | head -n 1 | awk '{ print $1 }')" >> $GITHUB_OUTPUT
         shell: bash
-      - name: Create ZIP Archive
-        run: |
-          if [ "${{ matrix.platfrom }}" = "linux" ]; then
-            zip -r "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip" ${{ matrix.bundle-path }}
-          elif [ "${{ matrix.platfrom }}" = "macos" ]; then
-            zip -r "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip" ${{ matrix.bundle-path }}
-          elif [ "${{ matrix.platfrom }}" = "windows" ]; then
-            Compress-Archive -Path ${{ matrix.bundle-path }} -DestinationPath "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
-          fi
+      - name: Create ZIP Archive Unix
+        run: zip -r "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip" ${{ matrix.bundle-path }}
+      - name: Create ZIP Archive Windows
+        run: Compress-Archive -Path ${{ matrix.bundle-path }} -DestinationPath "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
       - name: Upload Client
         uses: actions/upload-artifact@v4
         with:
@@ -122,7 +117,7 @@ jobs:
           path: ${{ matrix.bundle-path }}
       - name: Upload ZIP to Release
         run: |
-          gh release upload "${{ inputs.ref }}" "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
+          gh release --repo ${{ github.repository }} upload "${{ inputs.ref }}" "kinby-${{ matrix.abi }}-${{ inputs.ref }}-${{ steps.short_sha.outputs.SHORT_SHA }}.zip"
         env:
           GH_TOKEN: ${{ secrets.MAIN_PAT }}
       - name: Setup session
